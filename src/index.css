@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ *
+ * System theme: light by default, dark when the OS prefers dark.
+ * All Tailwind color tokens read these RGB channels, so the whole app
+ * flips automatically with no per-component dark: classes.
+ * ------------------------------------------------------------------ */
+:root {
+  color-scheme: light dark;
+
+  /* light */
+  --ink: 24 24 27;
+  --ink-muted: 82 82 91;
+  --ink-faint: 161 161 170;
+  --paper: 244 245 247;
+  --paper-raised: 255 255 255;
+  --paper-line: 228 228 231;
+  --brand: 249 115 22;
+  --brand-deep: 234 88 12;
+  --brand-soft: 194 65 12;
+  --ok: 22 163 74;
+  --alert: 220 38 38;
+
+  --scrollbar: #d4d4d8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* dark */
+    --ink: 245 245 245;
+    --ink-muted: 163 163 163;
+    --ink-faint: 115 115 115;
+    --paper: 10 10 10;
+    --paper-raised: 20 20 20;
+    --paper-line: 38 38 38;
+    --brand: 249 115 22;
+    --brand-deep: 234 88 12;
+    --brand-soft: 253 186 116;
+    --ok: 34 197 94;
+    --alert: 239 68 68;
+
+    --scrollbar: #3f3f46;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: rgb(var(--paper));
+  color: rgb(var(--ink));
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* tabular numerals for stats / timestamps */
+.numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* thin scrollbars */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border-radius: 8px;
+}
