@@ -14,7 +14,7 @@ export function RequireRole({
   const { user } = useAuth();
   if (!user) return <Redirect to="/login" />;
   if (user.role !== role) {
-    return <Redirect to={user.role === "resident" ? "/resident" : "/guard"} />;
+    return <Redirect to={homeForRole(user.role)} />;
   }
   return <>{children}</>;
 }
@@ -23,4 +23,17 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   if (!user) return <Redirect to="/login" />;
   return <>{children}</>;
+}
+
+// Landing route for each role after auth / on redirect.
+export function homeForRole(role: Role): string {
+  switch (role) {
+    case "resident":
+      return "/resident";
+    case "manager":
+      return "/manager";
+    case "guard":
+    default:
+      return "/guard";
+  }
 }

@@ -9,14 +9,22 @@ import type {
   PassType,
   Courier,
   ParcelSize,
+  Role,
+  EFormSubmission,
+  EFormStatus,
+  EFormReviewMeta,
+  MoveFormData,
+  ParkingFormData,
 } from "@/types";
 import {
   seedGuards,
+  seedManagers,
   seedParcels,
   seedPasses,
   seedResidents,
   seedUnits,
   seedVisitors,
+  seedEForms,
 } from "./data";
 
 // Mutable in-memory tables (reset on full page reload).
@@ -24,9 +32,11 @@ const db = {
   units: structuredClone(seedUnits),
   residents: structuredClone(seedResidents),
   guards: structuredClone(seedGuards),
+  managers: structuredClone(seedManagers),
   visitors: structuredClone(seedVisitors),
   passes: structuredClone(seedPasses),
   parcels: structuredClone(seedParcels),
+  eforms: structuredClone(seedEForms),
 };
 
 const delay = (ms = 350) => new Promise((res) => setTimeout(res, ms));
@@ -37,7 +47,7 @@ const code = () => `VIS-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
 export async function login(
   identifier: string,
   password: string,
-  role: "resident" | "guard"
+  role: Role
 ): Promise<AuthUser> {
   await delay();
   const idf = identifier.trim().toLowerCase();
@@ -47,6 +57,13 @@ export async function login(
     );
     if (!r || r.password !== password) throw new Error("Invalid credentials");
     return { id: r.id, role: "resident", name: r.name, unitId: r.unitId };
+  }
+  if (role === "manager") {
+    const m = db.managers.find(
+      (x) => x.email.toLowerCase() === idf || x.phone === identifier.trim()
+    );
+    if (!m || m.password !== password) throw new Error("Invalid credentials");
+    return { id: m.id, role: "manager", name: m.name };
   }
   const g = db.guards.find(
     (x) => x.email.toLowerCase() === idf || x.phone === identifier.trim()
@@ -328,4 +345,111 @@ export async function collectParcel(
   p.signature = input.signature;
   p.collectedAt = new Date().toISOString();
   return structuredClone(p);
+}
+
+// ---------------------------------------------------------------- eForms
+export async function listEForms(filter?: {
+  unitId?: string;
+  submittedById?: string;
+  status?: EFormStatus;
+}): Promise<EFormSubmission[]> {
+  await delay();
+  let rows = structuredClone(db.eforms);
+  if (filter?.unitId) rows = rows.filter((f) => f.unitId === filter.unitId);
+  if (filter?.submittedById)
+    rows = rows.filter((f) => f.submittedById === filter.submittedById);
+  if (filter?.status) rows = rows.filter((f) => f.status === filter.status);
+  return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function getEForm(
+  eformId: string
+): Promise<EFormSubmission | undefined> {
+  await delay(150);
+  return structuredClone(db.eforms.find((f) => f.id === eformId));
+}
+
+export interface SubmitMoveFormInput {
+  unitId: string;
+  submittedById: string;
+  submittedByName: string;
+  data: MoveFormData;
+}
+
+export async function submitMoveForm(
+  input: SubmitMoveFormInput
+): Promise<EFormSubmission> {
+  await delay();
+  const form: EFormSubmission = {
+    id: id("ef"),
+    type: "move",
+    unitId: input.unitId,
+    submittedById: input.submittedById,
+    submittedByName: input.submittedByName,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+    data: input.data,
+  };
+  db.eforms.push(form);
+  return structuredClone(form);
+}
+
+export interface SubmitParkingFormInput {
+  unitId: string;
+  submittedById: string;
+  submittedByName: string;
+  data: ParkingFormData;
+}
+
+export async function submitParkingForm(
+  input: SubmitParkingFormInput
+): Promise<EFormSubmission> {
+  await delay();
+  const form: EFormSubmission = {
+    id: id("ef"),
+    type: "parking",
+    unitId: input.unitId,
+    submittedById: input.submittedById,
+    submittedByName: input.submittedByName,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+    data: input.data,
+  };
+  db.eforms.push(form);
+  return structuredClone(form);
+}
+
+export interface ReviewEFormInput {
+  eformId: string;
+  status: Exclude<EFormStatus, "pending">;
+  reviewedByName: string;
+  reviewNote?: string;
+  reviewMeta?: EFormReviewMeta;
+}
+
+export async function reviewEForm(
+  input: ReviewEFormInput
+): Promise<EFormSubmission> {
+  await delay();
+  const f = db.eforms.find((x) => x.id === input.eformId);
+  if (!f) throw new Error("Submission not found");
+  f.status = input.status;
+  f.reviewedByName = input.reviewedByName;
+  f.reviewNote = input.reviewNote;
+  f.reviewMeta = input.reviewMeta;
+  f.reviewedAt = new Date().toISOString();
+  return structuredClone(f);
+}
+
+// Reset a reviewed submission back to pending (demo control).
+export async function resetEForm(eformId: string): Promise<EFormSubmission> {
+  await delay(200);
+  const f = db.eforms.find((x) => x.id === eformId);
+  if (!f) throw new Error("Submission not found");
+  f.status = "pending";
+  f.reviewedAt = undefined;
+  f.reviewedByName = undefined;
+  f.reviewNote = undefined;
+  f.reviewMeta = undefined;
+  return structuredClone(f);
 }

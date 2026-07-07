@@ -1,6 +1,6 @@
 // Shared domain types for the condo management app.
 
-export type Role = "resident" | "guard";
+export type Role = "resident" | "guard" | "manager";
 
 export interface Unit {
   id: string;
@@ -26,6 +26,15 @@ export interface Guard {
   email: string;
   password: string;
   shiftStart: string; // ISO
+}
+
+// Management office staff — review & approve resident eForm submissions.
+export interface Manager {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  password: string;
 }
 
 export type VisitorStatus = "expected" | "arrived" | "departed";
@@ -94,3 +103,81 @@ export interface AuthUser {
   name: string;
   unitId?: string; // residents only
 }
+
+// ---------------------------------------------------------------- eForms
+// Residents submit eForms; management officers review (approve/reject);
+// guards can view them read-only.
+
+export type EFormType = "move" | "parking";
+export type EFormStatus = "pending" | "approved" | "rejected";
+
+// Move In / Move Out form.
+export type MoveDirection = "move-in" | "move-out";
+
+export interface MoveFormData {
+  direction: MoveDirection;
+  residentName: string;
+  contactNo: string;
+  moveDate: string; // yyyy-mm-dd
+  timeSlot: string; // e.g. "09:00 – 12:00"
+  movingCompany?: string;
+  vehicleType: string; // Lorry / Van / Car / Other
+  vehiclePlate?: string;
+  itemsSummary?: string; // brief description of furniture / boxes
+  agree: boolean; // acknowledges deposit & house rules
+}
+
+// Car Parking Rental application form (based on the Danau Kota sample).
+export interface ParkingFormData {
+  fullName: string;
+  icPassport: string;
+  email: string;
+  contactNo: string;
+  vehicleMakeModel: string;
+  vehicleColor: string;
+  licensePlate: string;
+  agree: boolean; // acknowledges T&C
+}
+
+// Filled in by a management officer during review.
+export interface EFormReviewMeta {
+  bayNo?: string; // parking bay assigned on approval
+  level?: string; // parking level
+  accessCardNo?: string;
+}
+
+interface EFormCommon {
+  id: string;
+  unitId: string;
+  submittedById: string; // resident id
+  submittedByName: string;
+  status: EFormStatus;
+  createdAt: string; // ISO
+  reviewedAt?: string; // ISO
+  reviewedByName?: string;
+  reviewNote?: string;
+  reviewMeta?: EFormReviewMeta;
+}
+
+export interface MoveForm extends EFormCommon {
+  type: "move";
+  data: MoveFormData;
+}
+
+export interface ParkingForm extends EFormCommon {
+  type: "parking";
+  data: ParkingFormData;
+}
+
+export type EFormSubmission = MoveForm | ParkingForm;
+
+export const EFORM_LABELS: Record<EFormType, string> = {
+  move: "Move In / Move Out",
+  parking: "Car Parking Rental",
+};
+
+export const EFORM_STATUS_LABELS: Record<EFormStatus, string> = {
+  pending: "Pending review",
+  approved: "Approved",
+  rejected: "Rejected",
+};

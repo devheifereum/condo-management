@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, Users, Package, User, Building2, LogOut } from "lucide-react";
+import { Home, Users, Package, User, Building2, LogOut, FileText } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useAuth } from "@/lib/auth";
 import { unitLabel } from "@/mock/store";
@@ -9,6 +9,7 @@ const tabs = [
   { to: "/resident", label: "Home", icon: Home, exact: true },
   { to: "/resident/visitors", label: "Visitors", icon: Users },
   { to: "/resident/parcels", label: "Parcels", icon: Package },
+  { to: "/resident/forms", label: "eForms", icon: FileText },
   { to: "/resident/profile", label: "Profile", icon: User },
 ];
 
@@ -91,7 +92,7 @@ export function ResidentShell() {
 
           {/* mobile bottom tab bar */}
           <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-paper-line bg-paper-raised/95 backdrop-blur lg:hidden">
-            <div className="grid grid-cols-4">
+            <div className="grid grid-cols-5">
               {tabs.map((t) => {
                 const active = isActive(t.to, t.exact);
                 return (

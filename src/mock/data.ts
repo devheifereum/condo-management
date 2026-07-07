@@ -1,5 +1,7 @@
 import type {
+  EFormSubmission,
   Guard,
+  Manager,
   Parcel,
   Resident,
   Unit,
@@ -51,6 +53,10 @@ export const seedResidents: Resident[] = [
 export const seedGuards: Guard[] = [
   { id: "g1", name: "Encik Yusof", phone: "0112223333", email: "demo@guard.com", password: "password", shiftStart: h(3) },
   { id: "g2", name: "Encik Rosli", phone: "0112224444", email: "rosli@guard.com", password: "password", shiftStart: d(1) },
+];
+
+export const seedManagers: Manager[] = [
+  { id: "m1", name: "Puan Zaleha", phone: "0133334444", email: "demo@manager.com", password: "password" },
 ];
 
 export const seedVisitors: Visitor[] = [
@@ -109,4 +115,143 @@ export const seedParcels: Parcel[] = [
   { id: "pc14", trackingNo: "SPX556677889", unitId: "u7", courier: "Shopee", size: "S", status: "awaiting", loggedBy: "Encik Rosli", loggedAt: h(8) },
   { id: "pc15", trackingNo: "POS4455667788", unitId: "u12", courier: "Pos Laju", size: "L", status: "collected", loggedBy: "Encik Yusof", loggedAt: d(4), collectedByName: "Cheng Xiao", collectedAt: d(3), signature: SIG },
   { id: "pc16", trackingNo: "NV9988776655", unitId: "u9", courier: "Ninja Van", size: "M", status: "awaiting", loggedBy: "Encik Yusof", loggedAt: h(10) },
+];
+
+// yyyy-mm-dd, n days from now (negative = past).
+const dateStr = (n: number) =>
+  new Date(now + n * 24 * 3600_000).toISOString().slice(0, 10);
+
+export const seedEForms: EFormSubmission[] = [
+  // ---- Demo resident's unit (u1) — populates the resident's "My submissions" ----
+  {
+    id: "ef1",
+    type: "parking",
+    unitId: "u1",
+    submittedById: "r1",
+    submittedByName: "Irfan Ghapar",
+    status: "pending",
+    createdAt: h(6),
+    data: {
+      fullName: "Irfan Ghapar",
+      icPassport: "880214105531",
+      email: "demo@resident.com",
+      contactNo: "0124298385",
+      vehicleMakeModel: "Honda City",
+      vehicleColor: "White",
+      licensePlate: "WVX 2231",
+      agree: true,
+    },
+  },
+  {
+    id: "ef2",
+    type: "move",
+    unitId: "u1",
+    submittedById: "r1",
+    submittedByName: "Irfan Ghapar",
+    status: "approved",
+    createdAt: d(5),
+    reviewedAt: d(4),
+    reviewedByName: "Puan Zaleha",
+    reviewNote: "Approved. Please collect the lift padding key from the guardhouse.",
+    data: {
+      direction: "move-in",
+      residentName: "Irfan Ghapar",
+      contactNo: "0124298385",
+      moveDate: dateStr(-3),
+      timeSlot: "09:00 – 12:00",
+      movingCompany: "SwiftMove Logistics",
+      vehicleType: "Lorry",
+      vehiclePlate: "BND 5540",
+      itemsSummary: "Sofa set, fridge, ~20 boxes",
+      agree: true,
+    },
+  },
+  {
+    id: "ef3",
+    type: "move",
+    unitId: "u1",
+    submittedById: "r1b",
+    submittedByName: "Aisyah Ghapar",
+    status: "rejected",
+    createdAt: d(8),
+    reviewedAt: d(7),
+    reviewedByName: "Puan Zaleha",
+    reviewNote: "Requested date clashes with scheduled lift maintenance. Please re-submit for another day.",
+    data: {
+      direction: "move-out",
+      residentName: "Aisyah Ghapar",
+      contactNo: "0124300001",
+      moveDate: dateStr(-6),
+      timeSlot: "14:00 – 17:00",
+      vehicleType: "Van",
+      vehiclePlate: "WPK 7781",
+      itemsSummary: "Personal belongings, 8 boxes",
+      agree: true,
+    },
+  },
+
+  // ---- Other units — populates the management review queue & guard view ----
+  {
+    id: "ef4",
+    type: "parking",
+    unitId: "u5",
+    submittedById: "r5",
+    submittedByName: "Nurul Huda",
+    status: "pending",
+    createdAt: h(20),
+    data: {
+      fullName: "Nurul Huda",
+      icPassport: "910530145522",
+      email: "nurul@resident.com",
+      contactNo: "0192223344",
+      vehicleMakeModel: "Perodua Myvi",
+      vehicleColor: "Red",
+      licensePlate: "VCT 118",
+      agree: true,
+    },
+  },
+  {
+    id: "ef5",
+    type: "parking",
+    unitId: "u3",
+    submittedById: "r3",
+    submittedByName: "Lim Wei Jie",
+    status: "approved",
+    createdAt: d(10),
+    reviewedAt: d(9),
+    reviewedByName: "Puan Zaleha",
+    reviewNote: "Approved via monthly draw. Access card issued.",
+    reviewMeta: { bayNo: "B-042", level: "P2", accessCardNo: "AC-1092" },
+    data: {
+      fullName: "Lim Wei Jie",
+      icPassport: "850712087765",
+      email: "lim@resident.com",
+      contactNo: "0163344556",
+      vehicleMakeModel: "Toyota Vios",
+      vehicleColor: "Silver",
+      licensePlate: "WTN 9021",
+      agree: true,
+    },
+  },
+  {
+    id: "ef6",
+    type: "move",
+    unitId: "u7",
+    submittedById: "r7",
+    submittedByName: "Daniel Wong",
+    status: "pending",
+    createdAt: h(3),
+    data: {
+      direction: "move-in",
+      residentName: "Daniel Wong",
+      contactNo: "0181234567",
+      moveDate: dateStr(4),
+      timeSlot: "10:00 – 13:00",
+      movingCompany: "EasyShift Movers",
+      vehicleType: "Lorry",
+      vehiclePlate: "JHR 3388",
+      itemsSummary: "Bed frame, wardrobe, ~15 boxes",
+      agree: true,
+    },
+  },
 ];

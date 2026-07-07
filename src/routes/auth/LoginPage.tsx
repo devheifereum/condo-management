@@ -8,12 +8,14 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useAuth } from "@/lib/auth";
+import { homeForRole } from "@/components/RequireRole";
 import { login } from "@/mock/store";
 import type { Role } from "@/types";
 
 const DEMO: Record<Role, { identifier: string; password: string }> = {
   resident: { identifier: "demo@resident.com", password: "password" },
   guard: { identifier: "demo@guard.com", password: "password" },
+  manager: { identifier: "demo@manager.com", password: "password" },
 };
 
 export function LoginPage() {
@@ -33,7 +35,7 @@ export function LoginPage() {
         const user = await login(identifier, password, role);
         setUser(user);
         toast.success(`Welcome back, ${user.name.split(" ")[0]}`);
-        navigate({ to: user.role === "resident" ? "/resident" : "/guard" });
+        navigate({ to: homeForRole(user.role) });
       } catch {
         toast.error("Invalid credentials. Try the demo logins below.");
       }
@@ -54,6 +56,7 @@ export function LoginPage() {
           options={[
             { value: "resident", label: "Resident" },
             { value: "guard", label: "Guard" },
+            { value: "manager", label: "Manager" },
           ]}
           value={role}
           onChange={handleRoleChange}
@@ -139,6 +142,7 @@ export function LoginPage() {
         <p className="mb-1 font-medium text-ink-muted">Demo logins (password: password)</p>
         <p>Resident — demo@resident.com</p>
         <p>Guard — demo@guard.com</p>
+        <p>Manager — demo@manager.com</p>
       </div>
     </AuthShell>
   );

@@ -14,6 +14,8 @@ export const qk = {
   pass: (visitorId: string) => ["pass", visitorId] as const,
   parcels: (unitId?: string) => ["parcels", unitId ?? "all"] as const,
   parcel: (id: string) => ["parcel", id] as const,
+  eforms: (scope?: string) => ["eforms", scope ?? "all"] as const,
+  eform: (id: string) => ["eform", id] as const,
 };
 
 // ---- units ----
@@ -110,5 +112,64 @@ export function useCollectParcel() {
   return useMutation({
     mutationFn: (input: api.CollectParcelInput) => api.collectParcel(input),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["parcels"] }),
+  });
+}
+
+// ---- eForms ----
+export const useEForms = (filter?: {
+  unitId?: string;
+  submittedById?: string;
+  status?: import("@/types").EFormStatus;
+}) =>
+  useQuery({
+    queryKey: qk.eforms(
+      filter?.submittedById ?? filter?.unitId ?? filter?.status ?? "all"
+    ),
+    queryFn: () => api.listEForms(filter),
+  });
+
+export const useEForm = (id: string) =>
+  useQuery({
+    queryKey: qk.eform(id),
+    queryFn: () => api.getEForm(id),
+    enabled: !!id,
+  });
+
+export function useSubmitMoveForm() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: api.SubmitMoveFormInput) => api.submitMoveForm(input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["eforms"] }),
+  });
+}
+
+export function useSubmitParkingForm() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: api.SubmitParkingFormInput) =>
+      api.submitParkingForm(input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["eforms"] }),
+  });
+}
+
+export function useReviewEForm() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: api.ReviewEFormInput) => api.reviewEForm(input),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ["eforms"] });
+      qc.invalidateQueries({ queryKey: qk.eform(vars.eformId) });
+    },
+  });
+}
+
+export function useResetEForm() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (eformId: string) => api.resetEForm(eformId),
+    onSuccess: (_data, eformId) => {
+      qc.invalidateQueries({ queryKey: ["eforms"] });
+      qc.invalidateQueries({ queryKey: qk.eform(eformId) });
+    },
   });
 }

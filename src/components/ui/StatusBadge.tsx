@@ -43,11 +43,15 @@ export function statusTone(status: string): Tone {
   switch (status) {
     case "expected":
     case "awaiting":
+    case "pending":
       return "brand";
     case "arrived":
     case "departed":
     case "collected":
+    case "approved":
       return "ok";
+    case "rejected":
+      return "alert";
     default:
       return "muted";
   }

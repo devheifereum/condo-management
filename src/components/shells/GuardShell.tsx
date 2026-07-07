@@ -9,6 +9,7 @@ import {
   ScanLine,
   PackagePlus,
   UserPlus,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useAuth } from "@/lib/auth";
@@ -19,6 +20,7 @@ const nav = [
   { to: "/guard", label: "Dashboard", icon: LayoutDashboard, match: "/guard", exact: true },
   { to: "/guard/visitors/log", label: "Visitors", icon: Users, match: "/guard/visitors" },
   { to: "/guard/parcels/log", label: "Parcels", icon: Package, match: "/guard/parcels" },
+  { to: "/guard/forms", label: "eForms", icon: FileText, match: "/guard/forms" },
 ];
 
 const quick = [
@@ -133,7 +135,7 @@ export function GuardShell() {
           </main>
 
           {/* mobile bottom nav */}
-          <nav className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-3 border-t border-paper-line bg-paper-raised/95 backdrop-blur sm:hidden">
+          <nav className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-4 border-t border-paper-line bg-paper-raised/95 backdrop-blur sm:hidden">
             {nav.map((n) => {
               const active = isActive(n.match, n.exact);
               return (
