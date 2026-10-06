@@ -16,6 +16,7 @@ const config: Config = {
           DEFAULT: "rgb(var(--paper) / <alpha-value>)", // page background
           raised: "rgb(var(--paper-raised) / <alpha-value>)", // cards / surfaces
           line: "rgb(var(--paper-line) / <alpha-value>)", // borders / hairlines
+          tint: "rgb(var(--paper-tint) / <alpha-value>)", // brand-tinted surface
         },
         brand: {
           DEFAULT: "rgb(var(--brand) / <alpha-value>)", // orange accent

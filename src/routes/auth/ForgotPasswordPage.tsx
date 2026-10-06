@@ -1,27 +1,47 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { MailCheck } from "lucide-react";
 import { AuthShell } from "@/components/AuthShell";
-import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { authApi, ApiError } from "@/lib/api";
 
 export function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
-  const [value, setValue] = useState("");
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await authApi.forgotPassword(email);
+      setSent(true);
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : "Something went wrong";
+      setError(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   if (sent) {
     return (
-      <AuthShell title="Check your messages">
-        <div className="flex flex-col items-center py-4 text-center">
-          <MailCheck className="h-12 w-12 text-brand" />
-          <p className="mt-3 text-sm text-ink-muted">
-            If an account exists for{" "}
-            <span className="text-ink">{value}</span>, a reset link is on its
-            way.
-          </p>
-          <Link to="/login" className="mt-5">
-            <Button variant="secondary">Back to login</Button>
+      <AuthShell
+        title="Check your email"
+        subtitle={`If an account exists for ${email}, a password-reset link is on the way.`}
+        footer={
+          <Link to="/login" className="text-brand hover:text-brand-deep font-medium">
+            Back to sign in
           </Link>
+        }
+      >
+        <div className="flex items-center gap-3 rounded-lg bg-paper-tint border border-brand/20 p-4 text-sm text-brand-soft">
+          <MailCheck className="h-5 w-5 shrink-0" />
+          <span>The link expires in 1 hour.</span>
         </div>
       </AuthShell>
     );
@@ -29,31 +49,29 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthShell
-      title="Reset password"
-      subtitle="We'll send you a reset link"
+      title="Reset your password"
+      subtitle="Enter your email and we'll send you a reset link."
+      footer={
+        <Link to="/login" className="text-brand hover:text-brand-deep font-medium">
+          Back to sign in
+        </Link>
+      }
     >
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (value.trim()) setSent(true);
-        }}
-        className="space-y-4"
-      >
+      <form onSubmit={onSubmit} className="space-y-4">
         <Input
-          label="Email or phone"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="demo@resident.com"
+          label="Email"
+          type="email"
+          name="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
-        <Button type="submit" fullWidth size="lg" disabled={!value.trim()}>
+        {error && <p className="text-sm text-alert">{error}</p>}
+        <Button type="submit" fullWidth loading={submitting}>
           Send reset link
         </Button>
       </form>
-      <p className="mt-4 text-center text-sm">
-        <Link to="/login" className="text-brand hover:text-brand-deep">
-          Back to login
-        </Link>
-      </p>
     </AuthShell>
   );
 }

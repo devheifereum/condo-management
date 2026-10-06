@@ -1,44 +1,67 @@
-# Kondo — Condo Management (Visitor + Parcel)
+# MyUnitManager — Web
 
-Frontend UI for a condo management app with two features — **Visitor Management** and
-**Parcel Management** — on a shared resident/unit foundation. Clickable UI with a typed
-in-memory mock layer (no backend). Built with React + TypeScript and the TanStack suite.
+React + TypeScript + Vite web app for the **MyUnitManager** platform (Malaysia-first condominium / apartment / strata management).
+
+This is a fresh scaffold — currently it ships only the **authentication** slice wired to the Go backend at `../condo-backend`. Property, billing, visitor, facility and complaint screens will follow the phased plan in `../condo-backend/FEATURES_PLAN.md`.
 
 ## Stack
 
-- **React 18 + TypeScript + Vite**
-- **TanStack Router** — routing + role-based route protection
-- **TanStack Query** — all reads/writes against the mock store
-- **TanStack Table** — visitor and parcel logs
-- **TanStack Form** — login, sign up, visitor registration, walk-in
-- **Tailwind CSS** — black & orange theme
-- `qrcode.react` (passes), `sonner` (toasts), `lucide-react` (icons)
+- **React 18** + **TypeScript** + **Vite 6**
+- **TanStack Router** — file-less code-defined routing + protected routes
+- **Tailwind CSS 3** — white background + orange (#F97316) brand theme
+- **sonner** (toasts), **lucide-react** (icons)
+- Native `fetch` API client in `src/lib/api.ts` — no external HTTP lib
 
 ## Run
 
 ```bash
 npm install
-npm run dev      # http://localhost:5180
-npm run build    # typecheck + production build
+npm run dev       # http://localhost:5180
+npm run build     # typecheck + production build
+npm run typecheck # tsc --noEmit
 ```
 
-## Demo logins (password: `password`)
+Configure the API base URL via `.env` (copy `.env.example`):
 
-- **Resident** — `demo@resident.com` (Irfan, unit A-12-3)
-- **Guard** — `demo@guard.com`
+```
+VITE_API_BASE_URL=http://localhost:8080
+```
 
-Use the Resident / Guard toggle on the login screen.
+## Structure
 
-## What to try
+```
+src/
+├── main.tsx                     # bootstrap + providers
+├── router.tsx                   # TanStack Router route tree
+├── index.css                    # theme variables + Tailwind entry
+├── lib/
+│   ├── api.ts                   # fetch wrapper + authApi endpoints
+│   ├── auth.tsx                 # AuthProvider + useAuth
+│   └── cn.ts                    # tailwind-merge helper
+├── components/
+│   ├── AuthShell.tsx            # centered card layout for auth pages
+│   ├── Logo.tsx                 # MyUnitManager wordmark + shield SVG
+│   ├── RequireAuth.tsx          # guards protected routes
+│   ├── Redirect.tsx             # <Redirect to="…" />
+│   └── ui/                      # Button, Input, Card, Skeleton, StatusBadge, …
+└── routes/
+    ├── DashboardPage.tsx        # authenticated landing (placeholder)
+    └── auth/
+        ├── LoginPage.tsx
+        ├── SignupPage.tsx
+        ├── ForgotPasswordPage.tsx
+        ├── ResetPasswordPage.tsx
+        └── VerifyEmailPage.tsx
+```
 
-- **Resident:** register a visitor → get a QR pass; open an awaiting parcel → sign to collect.
-- **Guard:** Scan QR (press **Demo** to load a valid pass) → Log entry; Log parcel
-  (scan → unit → save, form re-focuses for the next one); Visitor / Parcel logs with
-  search, sort, filters; click a parcel row for the detail drawer + signature.
-- **Shared:** per-unit timeline mixing visitor + parcel events.
+## Auth flow
 
-## Notes
+1. `POST /api/v1/auth/register` → verification email sent
+2. User clicks link → `/verify-email?token=…` → backend returns `TokenResponse`
+3. Access + refresh tokens stored in `localStorage`; `AuthProvider` re-hydrates on reload from `sub` claim.
+4. `AuthProvider` exposes `login`, `logout`, `refreshUser`, `setSession`.
+5. `RequireAuth` guards the dashboard; unauthenticated users redirect to `/login`.
 
-- State is in-memory and resets on full page reload (by design — no real backend).
-- Auth is not persisted; a reload returns you to the login screen.
-- A blacklisted visitor (`Unknown Salesman`, plate `PNG 2010`) is seeded to demo alerts.
+## Theme
+
+CSS variables in `src/index.css` (fixed light theme for MVP). Primary brand: `--brand: 249 115 22` (`#F97316`, orange-500). Backgrounds default to white; `.auth-bg` adds subtle orange radial gradients on auth pages.

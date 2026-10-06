@@ -1,28 +1,38 @@
 import type { ReactNode } from "react";
-import { Building2 } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
-export function AuthShell({
-  title,
-  subtitle,
-  children,
-}: {
+interface Props {
   title: string;
   subtitle?: string;
   children: ReactNode;
-}) {
+  footer?: ReactNode;
+}
+
+/**
+ * Centered auth-page shell used by Login / Register / Forgot / Reset / Verify.
+ * Renders the wordmark logo, a card, and an optional footer link row.
+ */
+export function AuthShell({ title, subtitle, children, footer }: Props) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-paper px-4 py-10">
+    <div className="auth-bg min-h-screen flex flex-col items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex flex-col items-center text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-white">
-            <Building2 className="h-6 w-6" />
-          </div>
+        <div className="mb-8 flex justify-center">
+          <Logo size={96} />
+        </div>
+
+        <div className="rounded-2xl bg-paper-raised border border-paper-line shadow-card p-6 sm:p-8">
           <h1 className="text-xl font-semibold text-ink">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>}
+          {subtitle && (
+            <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>
+          )}
+          <div className="mt-6">{children}</div>
         </div>
-        <div className="rounded-lg border border-paper-line bg-paper-raised p-6 shadow-card">
-          {children}
-        </div>
+
+        {footer && (
+          <div className="mt-6 text-center text-sm text-ink-muted">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
